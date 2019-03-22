@@ -24,6 +24,16 @@ public class MissionMap {
         initializeCells();
     }
 
+    public int getMapWidthInWorld() {return MAP_WIDTH_IN_WORLD;}
+    public int getMapHeightInWorld() {return MAP_HEIGHT_IN_WORLD;}
+    public int getNumRows() { return m_numRows;}
+    public int getNumCols() { return m_numCols;}
+
+    public MissionCell getCell(int row, int col) {
+        return m_missionCells[row][col];
+    }
+
+
     private void initializeCells() {
         for(int row = 0; row < m_numRows; row++) {
             for(int col = 0; col < m_numCols; col++) {

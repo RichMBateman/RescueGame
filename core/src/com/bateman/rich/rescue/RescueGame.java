@@ -26,9 +26,14 @@ public class RescueGame extends ApplicationAdapter {
 	private FitViewport m_fitViewport;
 	private Rectangle m_screenSpace = new Rectangle();
 
+	private GameWorld m_gameWorld;
+
 
 	@Override
 	public void create() {
+		m_gameWorld = new GameWorld();
+		m_gameWorld.initialize();
+
 		m_shapeRenderer = new ShapeRenderer();
 
 		// create the m_camera and the SpriteBatch
@@ -66,13 +71,75 @@ public class RescueGame extends ApplicationAdapter {
 		m_shapeRenderer.end();
 
 		// Draw a red rectangle to represent the entire mission map.
-		// We're going to show it in a 200 by 200 square in the center of the 800w by 600h rectangle
+		// We're going to show it in a square in the center of the 800w by 600h rectangle
 		m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 		m_shapeRenderer.setColor(1, 0, 0, 1);
 		// The x and y refer to lower left coordinate of rectangle.
 		// And all these numbers refer to logical coordinates and sizes.
 		// In the game world, the most lower left coordinate is 0,0
-		m_shapeRenderer.rect(300, 200, 200, 200);
+		int mapWidth = m_gameWorld.getMissionMap().getMapWidthInWorld();
+		int mapHeight = m_gameWorld.getMissionMap().getMapHeightInWorld();
+		int mapLowerX = (VIEWPORT_WIDTH - mapWidth) / 2;
+		int mapLowerY = (VIEWPORT_HEIGHT - mapHeight) / 2;
+		m_shapeRenderer.rect(mapLowerX, mapLowerY, mapWidth, mapHeight);
+		m_shapeRenderer.end();
+
+		// Draw a filled green rectangle for each cell.  Internally, each cell will have padding,
+		// to create space between each cell.
+		MissionMap map = m_gameWorld.getMissionMap();
+		m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		m_shapeRenderer.setColor(0, 0.75f, 0.20f, 1);
+		for(int col = 0; col < map.getNumCols(); col++) {
+			for(int row = 0; row < map.getNumRows(); row++) {
+				MissionCell cell = map.getCell(row, col);
+				int cellWidth = MissionCell.CELL_SIZE_IN_WORLD - 8;
+				int cellHeight = MissionCell.CELL_SIZE_IN_WORLD - 8;
+				int cellLowerX = mapLowerX + 4 + row * MissionCell.CELL_SIZE_IN_WORLD;
+				int cellLowerY = mapLowerY + 4 + col * MissionCell.CELL_SIZE_IN_WORLD;
+				m_shapeRenderer.rect(cellLowerX, cellLowerY, cellWidth, cellHeight);
+			}
+		}
+		m_shapeRenderer.end();
+
+		// Draw the three agents in the upper left part of the screen.
+		m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		m_shapeRenderer.setColor(0.5f, 0.15f, 0.85f, 1);
+		for(int i = 0; i < m_gameWorld.NUM_AGENTS; i++) {
+			Agent a = m_gameWorld.getAgent(i);
+			if(a == m_gameWorld.ActiveAgent) {
+				m_shapeRenderer.setColor(0.75f, 0.35f, 0.95f, 1);
+			} else {
+				m_shapeRenderer.setColor(0.5f, 0.15f, 0.85f, 1);
+			}
+
+			int cellWidth = 16;
+			int cellHeight = 16;
+			int cellLowerX = 16;
+			int cellLowerY = (VIEWPORT_HEIGHT - cellHeight) // Start at the top of the screen, less the height of a cell
+				- 8 // add a buffer between top of screen and first cell
+			    - cellHeight * i // lower for each cell
+			    - (cellHeight / 2) * i; // space between cells.
+			m_shapeRenderer.rect(cellLowerX, cellLowerY, cellWidth, cellHeight);
+		}
+		m_shapeRenderer.end();
+
+		// Draw the 3 agents based on what cell they're in.
+		// For simplicity, each agent occupies a particular column within a cell depending on its index
+		m_shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		for(int i = 0; i < m_gameWorld.NUM_AGENTS; i++) {
+			Agent a = m_gameWorld.getAgent(i);
+			if(a == m_gameWorld.ActiveAgent) {
+				m_shapeRenderer.setColor(0.75f, 0.35f, 0.95f, 1);
+			} else {
+				m_shapeRenderer.setColor(0.5f, 0.15f, 0.85f, 1);
+			}
+
+			int cellWidth = 10;
+			int cellHeight = 30; // draw agents tall within mission cell, for now.
+			int cellLowerX = mapLowerX + 4 + (i * 13) + a.getCurrentCell().getColNum() * MissionCell.CELL_SIZE_IN_WORLD;
+			int cellLowerY = mapLowerY + 4 + a.getCurrentCell().getRowNum() * MissionCell.CELL_SIZE_IN_WORLD;
+			m_shapeRenderer.rect(cellLowerX, cellLowerY, cellWidth, cellHeight);
+		}
 		m_shapeRenderer.end();
 
 //

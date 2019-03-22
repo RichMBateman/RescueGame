@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
  * A particular cell within a MissionMap.
  */
 public class MissionCell {
-    public static final int CELL_SIZE_IN_WORLD=20;
+    public static final int CELL_SIZE_IN_WORLD=50;
 
     private Rectangle m_rect;
     private final int m_rowNum;
@@ -21,5 +21,13 @@ public class MissionCell {
         m_rect.y = rowNum * CELL_SIZE_IN_WORLD;
         m_rect.width = CELL_SIZE_IN_WORLD;
         m_rect.height = CELL_SIZE_IN_WORLD;
+    }
+
+    public int getRowNum() {
+        return m_rowNum;
+    }
+
+    public int getColNum() {
+        return m_colNum;
     }
 }
